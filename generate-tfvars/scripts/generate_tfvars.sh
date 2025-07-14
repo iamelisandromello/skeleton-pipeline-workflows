@@ -44,6 +44,7 @@ json_content=$(jq -n \
   --arg create_sqs_queue_str "$CREATE_SQS_QUEUE" \
   --arg use_existing_sqs_trigger_str "$USE_EXISTING_SQS_TRIGGER" \
   --arg existing_sqs_queue_name_val "$EXISTING_SQS_QUEUE_NAME" \
+  --arg lambda_layer_arn_val "$LAMBDA_LAYER_ARN" \
   '{
     environments: ($environments_str | fromjson),
     global_env_vars: ($global_env_vars_json_str | fromjson),
@@ -53,7 +54,8 @@ json_content=$(jq -n \
     environment: $environment_val,
     create_sqs_queue: ($create_sqs_queue_str | if . == "true" then true else false end),
     use_existing_sqs_trigger: ($use_existing_sqs_trigger_str | if . == "true" then true else false end),
-    existing_sqs_queue_name: $existing_sqs_queue_name_val
+    existing_sqs_queue_name: $existing_sqs_queue_name_val,
+    lambda_layer_arn: $lambda_layer_arn_val
   }')
 
 # Debug: Imprime o resultado do jq antes de escrever no arquivo

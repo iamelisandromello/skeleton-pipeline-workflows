@@ -36,6 +36,11 @@ inputs:
     required: false
     type: string
     default: ""
+  lambda_layer_arn:
+    description: "ARN da Lambda Layer compartilhada (opcional)"
+    required: false
+    type: string
+    default: ""
 
 runs:
   using: "composite"
@@ -77,6 +82,7 @@ runs:
         CREATE_SQS_QUEUE: ${{ inputs.create_sqs_queue }}
         USE_EXISTING_SQS_TRIGGER: ${{ inputs.use_existing_sqs_trigger }}
         EXISTING_SQS_QUEUE_NAME: ${{ inputs.existing_sqs_queue_name }}
+        LAMBDA_LAYER_ARN: ${{ inputs.lambda_layer_arn }}
 
     # 🕵️‍♀️ Debug do arquivo gerado
     - name: Debug - Conteúdo de terraform.auto.tfvars.json (APÓS GERAÇÃO)
