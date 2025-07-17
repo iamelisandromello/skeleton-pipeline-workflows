@@ -17,7 +17,11 @@ inputs:
     required: false
     default: "us-east-1"
   project_name:
-    description: "Nome do projeto para compor o nome do artefato .zip"
+    description: "Nome do projeto para compor o nome do artefato .zip no S3."
+    required: true
+  # NOVO INPUT ADICIONADO AQUI:
+  artifact_path:
+    description: "Caminho completo para o arquivo ZIP da Lambda a ser carregado (ex: ./consumer_repo/dist/my-project.zip)."
     required: true
 
 runs:
@@ -27,8 +31,14 @@ runs:
     - name: Validate inputs
       shell: bash
       run: |
-        test -n "${{ inputs.global_env_vars_json }}" || (echo "::error::global_env_vars_json is required" && exit 1)
-        test -n "${{ inputs.project_name }}" || (echo "::error::File '${{ inputs.project_name }}' does not exist" && exit 1)
+        test -n "${{ inputs.global_env_vars_json }}" || (echo "::error::global_env_vars_json é obrigatório." && exit 1)
+        test -n "${{ inputs.project_name }}" || (echo "::error::project_name é obrigatório." && exit 1)
+        # Nova validação para o caminho do artefato
+        test -n "${{ inputs.artifact_path }}" || (echo "::error::artifact_path é obrigatório." && exit 1)
+        if [ ! -f "${{ inputs.artifact_path }}" ]; then
+          echo "::error::Arquivo ZIP não encontrado em '${{ inputs.artifact_path }}'. Verifique o caminho."
+          exit 1
+        fi
 
     # -------------------------------
     # 🧩 EXTRAI NOME DO BUCKET DO JSON
@@ -61,13 +71,9 @@ runs:
         AWS_REGION: ${{ inputs.aws_region }}
       run: |
         set -e
-        if [ ! -f "${{ inputs.project_name }}.zip" ]; then
-          echo "❌ Arquivo ${{ inputs.project_name }}.zip não encontrado."
-          exit 1
-        fi
-
-        echo "🚀 Enviando ${{ inputs.project_name }}.zip para S3..."
-        aws s3 cp "${{ inputs.project_name }}.zip" "s3://$S3_BUCKET_NAME/${{ inputs.project_name }}.zip" \
+        # Agora usamos o novo input artifact_path para o caminho do arquivo
+        echo "🚀 Enviando '${{ inputs.artifact_path }}' para S3..."
+        aws s3 cp "${{ inputs.artifact_path }}" "s3://$S3_BUCKET_NAME/${{ inputs.project_name }}.zip" \
         --region $AWS_REGION --acl private
         
         set +e
